@@ -11,7 +11,7 @@ const Spotify={
             // check for accesstoken match using regex 
             //window.location.href gives url and .match() is used to fetch a regex string from it equal to accessToken & expiresIn
             const accessTokenMatch=window.location.href.match(/access_token=([^&]*)/);
-            const expiresInMatch=window .location.href.match(/expires_in=([^&]*)/);
+            const expiresInMatch=window.location.href.match(/expires_in=([^&]*)/);
 
             //means that the user is logged in
             if(accessTokenMatch && expiresInMatch){
@@ -60,6 +60,37 @@ const Spotify={
             }
     
         })
+    },
+    savePlaylist(name,trackUris){
+        if(!name||!trackUris.length){
+            return;
+        }
+        else{
+            const accessToken=Spotify.getAcessToken();
+            const headers={
+                Authorization:`Bearer ${accessToken}`
+            }
+            let userid;
+            return fetch('https://api.spotify.com/v1/me',{headers:headers}).then((response)=>{
+                return response.json();
+            }).then((jsonResponse)=>{
+                userid=jsonResponse.id;
+                return fetch(`https://api.spotify.com/v1/users/${userid}/playlists`,{
+                    headers:headers,
+                    method:'POST',
+                    body:JSON.stringify({name:name})
+                }).then(response=>{
+                    return response.json()
+                }).then(jsonResponse=>{
+                    const playlistId=jsonResponse.id;
+                    return fetch(`https://api.spotify.com/v1/users/${userid}/playlists/${playlistId}/tracks`,{
+                        headers:headers,
+                        method:'POST',
+                        body:JSON.stringify({uris:trackUris})
+                    })
+                })
+            })
+        }
     }
 
 
