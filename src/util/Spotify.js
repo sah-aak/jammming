@@ -1,5 +1,5 @@
-const clientId='6d11cd13cd4840cb932761ecb6eaa12b';
-const redirectUri='http://localhost:3000';
+const clientId='---------';
+const redirectUri='http://abounding-wave.surge.sh';
 let accessToken;
 
 const Spotify={
@@ -21,16 +21,14 @@ const Spotify={
 
                 const expiresIn=Number(expiresInMatch[1]);
                 //clear parameter after expiry
-                setTimeout(()=>{
-                    accessToken='';
-                },expiresIn*1000);
+                window.setTimeout(()=>accessToken='',expiresIn*1000);
                 window.history.pushState('Access Token', null, '/');
                 return accessToken;
             }
             // if user is not logged in or signed up
             else{
                 const accessUrl=`https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&scope=playlist-modify-public&redirect_uri=${redirectUri}`;
-                window.location.href=accessUrl;
+                window.location=accessUrl;
             }
         }
     },
@@ -40,7 +38,7 @@ const Spotify={
             headers:{
                 Authorization:`Bearer ${accessToken}`
             }
-        }).then((response)=>{
+        }).then(response=>{
             return response.json();
         }).then(jsonResponse=>{
             if(!jsonResponse.tracks){
@@ -51,7 +49,7 @@ const Spotify={
                     return {
                         id : track.id,
                         name: track.name,
-                        artists: track.artists[0].name,
+                        artist: track.artists[0].name,
                         album:track.album.name,
                         uri:track.uri
                     }
@@ -69,19 +67,16 @@ const Spotify={
             const accessToken=Spotify.getAcessToken();
             const headers={
                 Authorization:`Bearer ${accessToken}`
-            }
+            };
+    
             let userid;
-            return fetch('https://api.spotify.com/v1/me',{headers:headers}).then((response)=>{
-                return response.json();
-            }).then((jsonResponse)=>{
+            return fetch('https://api.spotify.com/v1/me',{headers:headers}).then((response)=>response.json()).then((jsonResponse)=>{
                 userid=jsonResponse.id;
                 return fetch(`https://api.spotify.com/v1/users/${userid}/playlists`,{
                     headers:headers,
                     method:'POST',
                     body:JSON.stringify({name:name})
-                }).then(response=>{
-                    return response.json()
-                }).then(jsonResponse=>{
+                }).then(response=>response.json()).then(jsonResponse=>{
                     const playlistId=jsonResponse.id;
                     return fetch(`https://api.spotify.com/v1/users/${userid}/playlists/${playlistId}/tracks`,{
                         headers:headers,
@@ -91,6 +86,7 @@ const Spotify={
                 })
             })
         }
+       
     }
 
 
